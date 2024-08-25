@@ -1,12 +1,20 @@
 #!/bin/bash
+message_usage="Usage: $0 <output_filename> <clients_number>"
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <output_filename> <clients_number>"
+    echo $message_usage
     exit 1
 fi
 
 output_filename=$1
 clients_number=$2
+
+regex='^[0-9]+$'
+if ! [[ $clients_number =~ $regex ]] ; then
+    echo "Error: <clients_number> must be a number"
+    echo $message_usage
+    exit 1
+fi
 
 compose_name="tp0"
 
