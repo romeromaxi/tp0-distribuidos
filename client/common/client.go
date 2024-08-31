@@ -114,7 +114,7 @@ func (c *Client) handleSigterm() {
 
 func (c *Client) gracefulShutdown() {
 	if c.conn != nil {
-		log.Infof("action: graceful_shutdown | result: success | client_id: %v", c.config.ID)
 		c.conn.Close()
+		log.Infof("action: graceful_shutdown | result: success | client_id: %v", c.config.ID)
 	}
 }
