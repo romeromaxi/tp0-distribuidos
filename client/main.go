@@ -38,6 +38,13 @@ func InitConfig() (*viper.Viper, error) {
 	v.BindEnv("loop", "amount")
 	v.BindEnv("log", "level")
 
+	// Add env variables BET
+	v.BindEnv("bet", "name")
+	v.BindEnv("bet", "surname")
+	v.BindEnv("bet", "dni")
+	v.BindEnv("bet", "birth")
+	v.BindEnv("bet", "number")
+
 	// Try to read configuration from config file. If config file
 	// does not exists then ReadInConfig will fail but configuration
 	// can be loaded from the environment variables so we shouldn't
