@@ -70,6 +70,10 @@ func (c *Client) StartClientLoop() {
 			// Create the connection the server in every loop iteration. Send an
 			c.createClientSocket()
 
+			if c.conn == nil {
+				return
+			}
+
 			// TODO: Modify the send to avoid short-write
 			fmt.Fprintf(
 				c.conn,
