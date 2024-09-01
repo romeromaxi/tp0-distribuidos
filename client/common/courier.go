@@ -24,22 +24,14 @@ func (c *Courier) SendTypeMessage(message_type string) error {
 	typeToSend := make([]byte, BYTES_SIZE_MESSAGE_TYPE)
 	copy(typeToSend, []byte(message_type))
 
-	log.Debugf("action: send_message_type | result: in_process | msg: %v",
-		typeToSend,
-	)
-
 	err := c.conn.send(typeToSend)
 
 	if err != nil {
 		log.Debugf("action: send_message_type | result: failure | msg: %v",
-			typeToSend,
+			message_type,
 		)
 		return err
 	}
-
-	log.Debugf("action: send_message_type | result: success | msg: %v",
-		typeToSend,
-	)
 
 	return nil
 }
@@ -58,22 +50,14 @@ func (c *Courier) SendMessage(message_type string, message string) error {
 
 	finalPayload := append(sizePayloadBytes, payload...)
 
-	log.Debugf("action: send_message | result: in_process | msg: %v",
-		finalPayload,
-	)
-
 	err = c.conn.send(finalPayload)
 
 	if err != nil {
 		log.Debugf("action: send_message | result: failure | msg: %v",
-			finalPayload,
+			payload,
 		)
 		return err
 	}
-
-	log.Debugf("action: send_message | result: success | msg: %v",
-		finalPayload,
-	)
 
 	return nil
 }

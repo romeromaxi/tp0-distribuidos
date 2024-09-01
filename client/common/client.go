@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -62,39 +63,59 @@ func (c *Client) createClientSocket() error {
 
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
-	select {
-	case <-c.sigtermReceived:
+	defer c.gracefulShutdown()
+
+	c.handleSigterm()
+
+	c.createClientSocket()
+
+	if c.courier == nil {
 		return
-
-	default:
-		c.handleSigterm()
-
-		c.createClientSocket()
-
-		if c.courier == nil {
-			return
-		}
-
-		err := c.courier.SendMessage("CONN", c.config.ID)
-
-		if err != nil {
-			return
-		}
-
-		err = c.courier.SendMessage("BET", "Santiago|Lorca")
-
-		if err != nil {
-			return
-		}
-
-		_, err = c.courier.RecvTypeMessage()
-
-		if err != nil {
-			return
-		}
-
-		c.gracefulShutdown()
 	}
+
+	err := c.courier.SendMessage("CONN", c.config.ID)
+
+	if err != nil {
+		log.Errorf("action: send_message | result: fail | client_id: %v | CONN error: %v",
+			c.config.ID,
+			err,
+		)
+		return
+	}
+
+	betMessage := fmt.Sprintf("%s|%s|%s|%s|%s", c.bet.Name, c.bet.Surname, c.bet.DNI, c.bet.Birth, c.bet.Number)
+	err = c.courier.SendMessage("BET", betMessage)
+
+	if err != nil {
+		log.Errorf("action: send_message | result: fail | client_id: %v | BET error: %v",
+			c.config.ID,
+			err,
+		)
+		return
+	}
+
+	recv_msg_type, err := c.courier.RecvTypeMessage()
+
+	if err != nil {
+		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			err,
+		)
+		return
+	}
+
+	if recv_msg_type != "OK" {
+		log.Errorf("action: apuesta_enviada | result: fail | dni: %v | numero: %v",
+			c.bet.DNI,
+			c.bet.Number,
+		)
+		return
+	}
+
+	log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
+		c.bet.DNI,
+		c.bet.Number,
+	)
 }
 
 func (c *Client) handleSigterm() {
@@ -104,8 +125,8 @@ func (c *Client) handleSigterm() {
 	go func() {
 		<-sigs
 		c.gracefulShutdown()
-		c.sigtermReceived <- true
-		close(c.sigtermReceived)
+		//c.sigtermReceived <- true
+		//close(c.sigtermReceived)
 	}()
 }
 

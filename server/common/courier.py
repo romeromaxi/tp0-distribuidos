@@ -12,7 +12,6 @@ class Courier:
     def sendResponseMessage(self, message_type: str):
         type_to_send = bytearray(BYTES_SIZE_MESSAGE_TYPE)
         type_to_send[:len(message_type)] = message_type.encode('utf-8')
-        logging.debug(f"Se desea enviar {message_type} | {type_to_send}")
         self._conn.send(type_to_send)
         
     def recvTypeMessage(self) -> str:
@@ -24,7 +23,6 @@ class Courier:
         size_payload = int.from_bytes(size_payload_bytes, byteorder='big', signed=False)
         
         payload_bytes = self._conn.recv(size_payload)
-        
         return payload_bytes.decode('utf-8')
     
     def close(self):
