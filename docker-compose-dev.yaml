@@ -19,32 +19,24 @@ services:
     environment:
       - CLI_ID=1
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BET_NAME=Santiago Lionel
-      - CLI_BET_SURNAME=Lorca
-      - CLI_BET_DNI=30904465
-      - CLI_BET_BIRTH=1999-03-17
-      - CLI_BET_NUMBER=2201
+      - CLI_BET_BATCH_SIZE=1
     volumes:
       - ./client/config.yaml:/config.yaml:ro
+      - ./.data/dataset/agency-1.csv:/agency.csv:ro
     networks:
       - testing_net
     depends_on:
-      - server
-
-  client2:
+      - server  client2:
     container_name: client2
     image: client:latest
     entrypoint: /client
     environment:
       - CLI_ID=2
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BET_NAME=Lautaro Valentin
-      - CLI_BET_SURNAME=Fornerón
-      - CLI_BET_DNI=23772524
-      - CLI_BET_BIRTH=1980-02-10
-      - CLI_BET_NUMBER=9955
+      - CLI_BET_BATCH_SIZE=2
     volumes:
       - ./client/config.yaml:/config.yaml:ro
+      - ./.data/dataset/agency-2.csv:/agency.csv:ro
     networks:
       - testing_net
     depends_on:
@@ -57,13 +49,10 @@ services:
     environment:
       - CLI_ID=3
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BET_NAME=Emanuel
-      - CLI_BET_SURNAME=Soto
-      - CLI_BET_DNI=22069151
-      - CLI_BET_BIRTH=2004-03-30
-      - CLI_BET_NUMBER=2979
+      - CLI_BET_BATCH_SIZE=3
     volumes:
       - ./client/config.yaml:/config.yaml:ro
+      - ./.data/dataset/agency-3.csv:/agency.csv:ro
     networks:
       - testing_net
     depends_on:
@@ -76,13 +65,10 @@ services:
     environment:
       - CLI_ID=4
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BET_NAME=Nicolas Andres
-      - CLI_BET_SURNAME=Huarte
-      - CLI_BET_DNI=29369913
-      - CLI_BET_BIRTH=1989-12-05
-      - CLI_BET_NUMBER=6857
+      - CLI_BET_BATCH_SIZE=4
     volumes:
       - ./client/config.yaml:/config.yaml:ro
+      - ./.data/dataset/agency-4.csv:/agency.csv:ro
     networks:
       - testing_net
     depends_on:
@@ -95,17 +81,14 @@ services:
     environment:
       - CLI_ID=5
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BET_NAME=Valentina
-      - CLI_BET_SURNAME=Vera
-      - CLI_BET_DNI=30170921
-      - CLI_BET_BIRTH=1982-05-22	
-      - CLI_BET_NUMBER=6053
+      - CLI_BET_BATCH_SIZE=5
     volumes:
       - ./client/config.yaml:/config.yaml:ro
+      - ./.data/dataset/agency-5.csv:/agency.csv:ro
     networks:
       - testing_net
     depends_on:
-      - server
+      - server 
 
 networks:
   testing_net:

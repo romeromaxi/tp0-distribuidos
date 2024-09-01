@@ -8,3 +8,6 @@ log:
   level: "INFO"
 batch:
   maxAmount: 10
+file:
+  name: "agency.csv"
+  delimiter: ","  
