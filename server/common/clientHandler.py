@@ -26,6 +26,9 @@ class ClientHandler:
             else:
                 logging.error("action: recv_message | error: Type Message not found")
         
+        self.close()
+        
+    def close(self):
         self._courier.close()
         
     def __process_connection_message(self):

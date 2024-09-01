@@ -44,6 +44,8 @@ class Server:
             client.run()
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
+        finally:
+            client.close()
 
     def __accept_new_connection(self):
         """
