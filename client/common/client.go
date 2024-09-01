@@ -1,14 +1,18 @@
 package common
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/op/go-logging"
 )
+
+const BET_FIELDS_NUMBER = 5
 
 var log = logging.MustGetLogger("log")
 
@@ -16,30 +20,23 @@ var log = logging.MustGetLogger("log")
 type ClientConfig struct {
 	ID            string
 	ServerAddress string
-}
-
-type ClientBetConfig struct {
-	Name    string
-	Surname string
-	DNI     string
-	Birth   string
-	Number  string
+	FileName      string
+	FileDelimiter string
+	BatchSize     int
 }
 
 // Client Entity that encapsulates how
 type Client struct {
 	config          ClientConfig
-	bet             ClientBetConfig
 	courier         *Courier
 	sigtermReceived chan bool
 }
 
 // NewClient Initializes a new client receiving the configuration
 // as a parameter
-func NewClient(config ClientConfig, bet ClientBetConfig) *Client {
+func NewClient(config ClientConfig) *Client {
 	client := &Client{
 		config:          config,
-		bet:             bet,
 		sigtermReceived: make(chan bool, 1),
 	}
 	return client
@@ -76,15 +73,13 @@ func (c *Client) SendConnectionMessage() error {
 	return nil
 }
 
-func (c *Client) SendBetMessageAndRecv() error {
-	bet_message := GetBetMessage(c.bet.Name, c.bet.Surname, c.bet.DNI, c.bet.Birth, c.bet.Number)
-	err := c.courier.SendMessage(bet_message)
+func (c *Client) SendBetsBatchMessageAndRecv(betsInBatch [][]string) error {
+	number_of_bets := len(betsInBatch)
+	nbets_message := GetBetsBatchMessage(betsInBatch)
+
+	err := c.courier.SendMessage(nbets_message)
 
 	if err != nil {
-		log.Errorf("action: send_message | result: fail | client_id: %v | BET error: %v",
-			c.config.ID,
-			err,
-		)
 		return err
 	}
 
@@ -104,40 +99,102 @@ func (c *Client) SendBetMessageAndRecv() error {
 	)
 
 	if recv_msg_type != MESSAGE_TYPE_OK_RESPONSE {
-		nok_reponse := fmt.Errorf("action: apuesta_enviada | result: fail | dni: %v | numero: %v",
-			c.bet.DNI,
-			c.bet.Number,
+		nok_reponse := fmt.Errorf("action: apuesta_enviada | result: fail | client_id: %v | cantidad: %v",
+			c.config.ID,
+			number_of_bets,
 		)
 		return nok_reponse
 	}
 
-	log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
-		c.bet.DNI,
-		c.bet.Number,
-	)
+	return nil
+}
+
+func (c *Client) SendEndBetsMessage() error {
+	end_message := GetEndBetsMessage()
+	err := c.courier.SendMessage(end_message)
+
+	if err != nil {
+		log.Errorf("action: send_message | result: fail | client_id: %v | END error: %v",
+			c.config.ID,
+			err,
+		)
+		return err
+	}
 
 	return nil
 }
 
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
+	c.handleSigterm()
 	defer c.gracefulShutdown()
 
-	c.handleSigterm()
-
-	c.createClientSocket()
-
-	if c.courier == nil {
-		return
-	}
-
-	err := c.SendConnectionMessage()
+	err := c.createClientSocket()
 
 	if err != nil {
 		return
 	}
 
-	c.SendBetMessageAndRecv()
+	err = c.SendConnectionMessage()
+
+	if err != nil {
+		return
+	}
+
+	file, err := os.Open(c.config.FileName)
+	if err != nil {
+		log.Errorf("action: open_file | result: fail | error: %v", err)
+		return
+	}
+	defer file.Close()
+
+	log.Debugf("action: open_file | result: success")
+
+	scanner := bufio.NewScanner(file)
+
+	currentBatchSize := 0
+	lineNumber := 0
+	var betsInCurrentBatch [][]string
+
+	for scanner.Scan() {
+		lineNumber++
+		line := scanner.Text()
+		fields := strings.Split(line, c.config.FileDelimiter)
+
+		if len(fields) < BET_FIELDS_NUMBER {
+			log.Errorf("action: read_line | result: fail | error: BAD FORMAT LINE %v", lineNumber)
+			continue
+		}
+
+		if currentBatchSize < c.config.BatchSize {
+			betsInCurrentBatch = append(betsInCurrentBatch, fields)
+			currentBatchSize++
+		}
+
+		if currentBatchSize == c.config.BatchSize {
+			err = c.SendBetsBatchMessageAndRecv(betsInCurrentBatch)
+
+			if err != nil {
+				break
+			}
+			currentBatchSize = 0
+			betsInCurrentBatch = nil
+		}
+	}
+
+	if currentBatchSize > 0 {
+		err = c.SendBetsBatchMessageAndRecv(betsInCurrentBatch)
+	}
+
+	if err == nil {
+		err = scanner.Err()
+		if err != nil {
+			log.Errorf("action: open_file | result: fail | error: %v", err)
+			return
+		}
+
+		c.SendEndBetsMessage()
+	}
 
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
@@ -149,8 +206,8 @@ func (c *Client) handleSigterm() {
 	go func() {
 		<-sigs
 		c.gracefulShutdown()
-		//c.sigtermReceived <- true
-		//close(c.sigtermReceived)
+		c.sigtermReceived <- true
+		close(c.sigtermReceived)
 	}()
 }
 
