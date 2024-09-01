@@ -62,24 +62,38 @@ func (c *Client) createClientSocket() error {
 
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
-	c.handleSigterm()
-
-	c.createClientSocket()
-
-	if c.courier == nil {
+	select {
+	case <-c.sigtermReceived:
 		return
-	}
 
-	err := c.courier.SendMessage("CONN", c.config.ID)
+	default:
+		c.handleSigterm()
 
-	if err != nil {
-		return
-	}
+		c.createClientSocket()
 
-	err = c.courier.SendMessage("BET", "Maxi|Romero")
+		if c.courier == nil {
+			return
+		}
 
-	if err != nil {
-		return
+		err := c.courier.SendMessage("CONN", c.config.ID)
+
+		if err != nil {
+			return
+		}
+
+		err = c.courier.SendMessage("BET", "Santiago|Lorca")
+
+		if err != nil {
+			return
+		}
+
+		_, err = c.courier.RecvTypeMessage()
+
+		if err != nil {
+			return
+		}
+
+		c.gracefulShutdown()
 	}
 }
 
@@ -97,7 +111,7 @@ func (c *Client) handleSigterm() {
 
 func (c *Client) gracefulShutdown() {
 	if c.courier != nil {
-		c.courier.conn.close()
+		c.courier.Close()
 		log.Infof("action: graceful_shutdown | result: success | client_id: %v", c.config.ID)
 	}
 }

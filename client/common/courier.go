@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/binary"
 	"net"
+	"strings"
 )
 
 const BYTES_SIZE_MESSAGE_TYPE = 4
@@ -19,7 +20,7 @@ func NewCourier(id string, conn net.Conn) *Courier {
 	return Courier
 }
 
-func (c *Courier) SendMessage(message_type string, message string) error {
+func (c *Courier) SendTypeMessage(message_type string) error {
 	typeToSend := make([]byte, BYTES_SIZE_MESSAGE_TYPE)
 	copy(typeToSend, []byte(message_type))
 
@@ -29,14 +30,24 @@ func (c *Courier) SendMessage(message_type string, message string) error {
 
 	err := c.conn.send(typeToSend)
 
-	log.Debugf("action: send_message_type | result: success | msg: %v",
-		typeToSend,
-	)
-
 	if err != nil {
 		log.Debugf("action: send_message_type | result: failure | msg: %v",
 			typeToSend,
 		)
+		return err
+	}
+
+	log.Debugf("action: send_message_type | result: success | msg: %v",
+		typeToSend,
+	)
+
+	return nil
+}
+
+func (c *Courier) SendMessage(message_type string, message string) error {
+	err := c.SendTypeMessage(message_type)
+
+	if err != nil {
 		return err
 	}
 
@@ -69,11 +80,14 @@ func (c *Courier) SendMessage(message_type string, message string) error {
 
 func (c *Courier) RecvTypeMessage() (string, error) {
 	msgTypeBytes, err := c.conn.recv(BYTES_SIZE_MESSAGE_TYPE)
+
 	if err != nil {
 		return "", err
 	}
 
-	return string(msgTypeBytes), nil
+	msgType := string(msgTypeBytes)
+
+	return strings.TrimRight(msgType, "\x00"), nil
 }
 
 func (c *Courier) RecvPayloadMessage() (string, error) {
@@ -91,4 +105,10 @@ func (c *Courier) RecvPayloadMessage() (string, error) {
 	}
 
 	return string(payloadBytes), nil
+}
+
+func (c *Courier) Close() {
+	if c.conn != nil {
+		c.conn.close()
+	}
 }

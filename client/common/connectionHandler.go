@@ -33,11 +33,14 @@ func (mc *ConnectionHandler) send(data []byte) error {
 }
 
 func (mc *ConnectionHandler) recv(sizeToRecv int) ([]byte, error) {
+	log.Debugf("Se desea recibir %v", sizeToRecv)
 	data := make([]byte, sizeToRecv)
 
 	totalBytesRecv := 0
 	for totalBytesRecv < sizeToRecv {
 		bytesRecv, err := mc.conn.Read(data[totalBytesRecv:])
+
+		log.Debugf("Se recibe %v | %v", bytesRecv, err)
 
 		if err != nil {
 			return nil, err
