@@ -61,7 +61,7 @@ func GetBetsBatchMessage(betsInBatch [][]string) Message {
 
 func GetEndBetsMessage() Message {
 	return Message{
-		Type:    MESSAGE_TYPE_CONNECTION,
+		Type:    MESSAGE_TYPE_END_BETS,
 		Payload: "",
 	}
 }

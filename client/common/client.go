@@ -128,6 +128,7 @@ func (c *Client) SendEndBetsMessage() error {
 func (c *Client) StartClientLoop() {
 	c.handleSigterm()
 	defer c.gracefulShutdown()
+	defer c.SendEndBetsMessage()
 
 	err := c.createClientSocket()
 
@@ -192,8 +193,6 @@ func (c *Client) StartClientLoop() {
 			log.Errorf("action: open_file | result: fail | error: %v", err)
 			return
 		}
-
-		c.SendEndBetsMessage()
 	}
 
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
