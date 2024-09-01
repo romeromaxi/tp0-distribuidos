@@ -61,6 +61,64 @@ func (c *Client) createClientSocket() error {
 	return nil
 }
 
+func (c *Client) SendConnectionMessage() error {
+	connection_message := GetConnectionMessage(c.config.ID)
+	err := c.courier.SendMessage(connection_message)
+
+	if err != nil {
+		log.Errorf("action: send_message | result: fail | client_id: %v | CONN error: %v",
+			c.config.ID,
+			err,
+		)
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) SendBetMessageAndRecv() error {
+	bet_message := GetBetMessage(c.bet.Name, c.bet.Surname, c.bet.DNI, c.bet.Birth, c.bet.Number)
+	err := c.courier.SendMessage(bet_message)
+
+	if err != nil {
+		log.Errorf("action: send_message | result: fail | client_id: %v | BET error: %v",
+			c.config.ID,
+			err,
+		)
+		return err
+	}
+
+	recv_msg_type, err := c.courier.RecvTypeMessage()
+
+	if err != nil {
+		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
+			c.config.ID,
+			err,
+		)
+		return err
+	}
+
+	log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
+		c.config.ID,
+		recv_msg_type,
+	)
+
+	if recv_msg_type != MESSAGE_TYPE_OK_RESPONSE {
+		nok_reponse := fmt.Errorf("action: apuesta_enviada | result: fail | dni: %v | numero: %v",
+			c.bet.DNI,
+			c.bet.Number,
+		)
+		return nok_reponse
+	}
+
+	log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
+		c.bet.DNI,
+		c.bet.Number,
+	)
+
+	return nil
+}
+
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
 	defer c.gracefulShutdown()
@@ -73,49 +131,15 @@ func (c *Client) StartClientLoop() {
 		return
 	}
 
-	err := c.courier.SendMessage("CONN", c.config.ID)
+	err := c.SendConnectionMessage()
 
 	if err != nil {
-		log.Errorf("action: send_message | result: fail | client_id: %v | CONN error: %v",
-			c.config.ID,
-			err,
-		)
 		return
 	}
 
-	betMessage := fmt.Sprintf("%s|%s|%s|%s|%s", c.bet.Name, c.bet.Surname, c.bet.DNI, c.bet.Birth, c.bet.Number)
-	err = c.courier.SendMessage("BET", betMessage)
+	c.SendBetMessageAndRecv()
 
-	if err != nil {
-		log.Errorf("action: send_message | result: fail | client_id: %v | BET error: %v",
-			c.config.ID,
-			err,
-		)
-		return
-	}
-
-	recv_msg_type, err := c.courier.RecvTypeMessage()
-
-	if err != nil {
-		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
-			c.config.ID,
-			err,
-		)
-		return
-	}
-
-	if recv_msg_type != "OK" {
-		log.Errorf("action: apuesta_enviada | result: fail | dni: %v | numero: %v",
-			c.bet.DNI,
-			c.bet.Number,
-		)
-		return
-	}
-
-	log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
-		c.bet.DNI,
-		c.bet.Number,
-	)
+	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
 
 func (c *Client) handleSigterm() {

@@ -36,7 +36,7 @@ func (c *Courier) SendTypeMessage(message_type string) error {
 	return nil
 }
 
-func (c *Courier) SendMessage(message_type string, message string) error {
+func (c *Courier) SendMessageWithPayload(message_type string, message string) error {
 	err := c.SendTypeMessage(message_type)
 
 	if err != nil {
@@ -60,6 +60,14 @@ func (c *Courier) SendMessage(message_type string, message string) error {
 	}
 
 	return nil
+}
+
+func (c *Courier) SendMessage(message Message) error {
+	if message.Payload == "" {
+		return c.SendTypeMessage(message.Type)
+	}
+
+	return c.SendMessageWithPayload(message.Type, message.Payload)
 }
 
 func (c *Courier) RecvTypeMessage() (string, error) {
