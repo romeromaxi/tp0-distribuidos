@@ -1,4 +1,15 @@
+from enum import Enum
+
 BYTES_SIZE_MESSAGE_TYPE = 4
 BYTES_SIZE_PAYLAOD_SIZE = 4
 BET_FIELDS_NUMBER = 5
 MESSAGE_DELIMITER = "|"
+
+class MessageTypes(Enum):
+    BET = "BET"
+    BETS_BATCH = "NBET"
+    CONNECTION = "CONN"
+    END_BETS = "END"
+    
+    OK_RESPONSE = "OK"
+    NO_OK_RESPONSE = "NOK"

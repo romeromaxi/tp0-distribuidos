@@ -12,8 +12,6 @@ import (
 	"github.com/op/go-logging"
 )
 
-const BET_FIELDS_NUMBER = 5
-
 var log = logging.MustGetLogger("log")
 
 // ClientConfig Configuration used by the client

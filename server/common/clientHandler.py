@@ -2,8 +2,7 @@ import logging
 from common.courier import Courier
 from common.utils import Bet
 from common.utils import store_bets
-from common.enums import MessageTypes
-from common.constants import BET_FIELDS_NUMBER, MESSAGE_DELIMITER
+from common.constants import MessageTypes, BET_FIELDS_NUMBER, MESSAGE_DELIMITER
 
 class ClientHandler:
     def __init__(self, client_sock):

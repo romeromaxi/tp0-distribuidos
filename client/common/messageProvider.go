@@ -5,17 +5,6 @@ import (
 	"strings"
 )
 
-const DATA_DELIMITER = "|"
-
-const (
-	MESSAGE_TYPE_BET        string = "BET"
-	MESSAGE_TYPE_BETS_BATCH string = "NBET"
-	MESSAGE_TYPE_CONNECTION string = "CONN"
-	MESSAGE_TYPE_END_BETS   string = "END"
-
-	MESSAGE_TYPE_OK_RESPONSE string = "OK"
-)
-
 type Message struct {
 	Type    string
 	Payload string
@@ -29,7 +18,7 @@ func GetConnectionMessage(clientId string) Message {
 }
 
 func FormatBet(name string, surname string, dni string, birth string, number string) string {
-	return fmt.Sprintf("%s|%s|%s|%s|%s", name, surname, dni, birth, number)
+	return fmt.Sprintf("%s%s%s%s%s%s%s%s%s", name, DATA_DELIMITER, surname, DATA_DELIMITER, dni, DATA_DELIMITER, birth, DATA_DELIMITER, number)
 }
 
 func GetBetMessage(name string, surname string, dni string, birth string, number string) Message {
@@ -49,7 +38,7 @@ func GetBetsBatchMessage(betsInBatch [][]string) Message {
 
 	for _, row := range betsInBatch {
 		betPayload := FormatBet(row[0], row[1], row[2], row[3], row[4])
-		strBuilder.WriteString("|")
+		strBuilder.WriteString(DATA_DELIMITER)
 		strBuilder.WriteString(betPayload)
 	}
 

@@ -6,9 +6,6 @@ import (
 	"strings"
 )
 
-const BYTES_SIZE_MESSAGE_TYPE = 4
-const BYTES_SIZE_PAYLAOD_SIZE = 4
-
 type Courier struct {
 	conn *ConnectionHandler
 }
