@@ -9,13 +9,6 @@ fi
 output_filename=$1
 clients_number=$2
 
-regex='^[0-9]+$'
-if ! [[ $clients_number =~ $regex ]] ; then
-    echo "Error: <clients_number> must be a number"
-    echo $message_usage
-    exit 1
-fi
-
 compose_name="tp0"
 
 server_name="server"
