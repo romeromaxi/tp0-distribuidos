@@ -2,7 +2,6 @@ package common
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -26,7 +25,7 @@ type ClientConfig struct {
 // Client Entity that encapsulates how
 type Client struct {
 	config          ClientConfig
-	courier         *Courier
+	messageHandler  *MessageHandler
 	sigtermReceived chan bool
 }
 
@@ -52,81 +51,17 @@ func (c *Client) createClientSocket() error {
 			err,
 		)
 	}
-	c.courier = NewCourier(c.config.ID, conn)
-	return nil
-}
-
-func (c *Client) SendConnectionMessage() error {
-	connection_message := GetConnectionMessage(c.config.ID)
-	err := c.courier.SendMessage(connection_message)
-
-	if err != nil {
-		log.Errorf("action: send_message | result: fail | client_id: %v | CONN error: %v",
-			c.config.ID,
-			err,
-		)
-		return err
-	}
-
-	return nil
-}
-
-func (c *Client) SendBetsBatchMessageAndRecv(betsInBatch [][]string) error {
-	number_of_bets := len(betsInBatch)
-	nbets_message := GetBetsBatchMessage(betsInBatch)
-
-	err := c.courier.SendMessage(nbets_message)
-
-	if err != nil {
-		return err
-	}
-
-	recv_msg_type, err := c.courier.RecvTypeMessage()
-
-	if err != nil {
-		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
-			c.config.ID,
-			err,
-		)
-		return err
-	}
-
-	log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
-		c.config.ID,
-		recv_msg_type,
-	)
-
-	if recv_msg_type != MESSAGE_TYPE_OK_RESPONSE {
-		nok_reponse := fmt.Errorf("action: apuesta_enviada | result: fail | client_id: %v | cantidad: %v",
-			c.config.ID,
-			number_of_bets,
-		)
-		return nok_reponse
-	}
-
-	return nil
-}
-
-func (c *Client) SendEndBetsMessage() error {
-	end_message := GetEndBetsMessage()
-	err := c.courier.SendMessage(end_message)
-
-	if err != nil {
-		log.Errorf("action: send_message | result: fail | client_id: %v | END error: %v",
-			c.config.ID,
-			err,
-		)
-		return err
-	}
-
+	c.messageHandler = NewMessageHandler(c.config.ID, conn)
 	return nil
 }
 
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
 	c.handleSigterm()
-	defer c.gracefulShutdown()
-	defer c.SendEndBetsMessage()
+	defer func() {
+		c.messageHandler.SendEndBetsMessage()
+		c.gracefulShutdown()
+	}()
 
 	err := c.createClientSocket()
 
@@ -134,7 +69,7 @@ func (c *Client) StartClientLoop() {
 		return
 	}
 
-	err = c.SendConnectionMessage()
+	err = c.messageHandler.SendConnectionMessage()
 
 	if err != nil {
 		return
@@ -171,7 +106,7 @@ func (c *Client) StartClientLoop() {
 		}
 
 		if currentBatchSize == c.config.BatchSize {
-			err = c.SendBetsBatchMessageAndRecv(betsInCurrentBatch)
+			err = c.messageHandler.SendBetsBatchMessageAndRecv(betsInCurrentBatch)
 
 			if err != nil {
 				break
@@ -182,7 +117,7 @@ func (c *Client) StartClientLoop() {
 	}
 
 	if currentBatchSize > 0 {
-		err = c.SendBetsBatchMessageAndRecv(betsInCurrentBatch)
+		err = c.messageHandler.SendBetsBatchMessageAndRecv(betsInCurrentBatch)
 	}
 
 	if err == nil {
@@ -209,8 +144,8 @@ func (c *Client) handleSigterm() {
 }
 
 func (c *Client) gracefulShutdown() {
-	if c.courier != nil {
-		c.courier.Close()
+	if c.messageHandler != nil {
+		c.messageHandler.Close()
 		log.Infof("action: graceful_shutdown | result: success | client_id: %v", c.config.ID)
 	}
 }

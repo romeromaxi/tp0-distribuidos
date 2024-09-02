@@ -10,7 +10,7 @@ type Courier struct {
 	conn *ConnectionHandler
 }
 
-func NewCourier(id string, conn net.Conn) *Courier {
+func NewCourier(conn net.Conn) *Courier {
 	Courier := &Courier{
 		conn: NewConnectionHandler(conn),
 	}
