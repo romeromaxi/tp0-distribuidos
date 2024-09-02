@@ -7,7 +7,7 @@ loop:
 log:
   level: "INFO"
 batch:
-  maxAmount: 10
+  maxAmount: 100
 file:
   name: "agency.csv"
   delimiter: ","  

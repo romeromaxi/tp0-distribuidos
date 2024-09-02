@@ -19,7 +19,6 @@ services:
     environment:
       - CLI_ID=1
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCH_MAXAMOUNT=100
     volumes:
       - ./client/config.yaml:/config.yaml:ro
       - ./.data/dataset/agency-1.csv:/agency.csv:ro
@@ -35,7 +34,6 @@ services:
     environment:
       - CLI_ID=2
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCH_MAXAMOUNT=100
     volumes:
       - ./client/config.yaml:/config.yaml:ro
       - ./.data/dataset/agency-2.csv:/agency.csv:ro
@@ -51,7 +49,6 @@ services:
     environment:
       - CLI_ID=3
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCH_MAXAMOUNT=100
     volumes:
       - ./client/config.yaml:/config.yaml:ro
       - ./.data/dataset/agency-3.csv:/agency.csv:ro
@@ -67,7 +64,6 @@ services:
     environment:
       - CLI_ID=4
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCH_MAXAMOUNT=100
     volumes:
       - ./client/config.yaml:/config.yaml:ro
       - ./.data/dataset/agency-4.csv:/agency.csv:ro
@@ -83,7 +79,6 @@ services:
     environment:
       - CLI_ID=5
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCH_MAXAMOUNT=90
     volumes:
       - ./client/config.yaml:/config.yaml:ro
       - ./.data/dataset/agency-5.csv:/agency.csv:ro
