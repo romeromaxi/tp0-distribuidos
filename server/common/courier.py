@@ -1,8 +1,6 @@
 import logging
 from common.connectionHandler import ConnectionHandler
-
-BYTES_SIZE_MESSAGE_TYPE = 4
-BYTES_SIZE_PAYLAOD_SIZE = 4
+from common.constants import BYTES_SIZE_MESSAGE_TYPE, BYTES_SIZE_PAYLAOD_SIZE
 
 class Courier:
     def __init__(self, client_sock):

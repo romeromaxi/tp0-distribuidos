@@ -3,11 +3,7 @@ from common.courier import Courier
 from common.utils import Bet
 from common.utils import store_bets
 from common.enums import MessageTypes
-
-BYTES_SIZE_MESSAGE_TYPE = 4
-BYTES_SIZE_PAYLAOD_SIZE = 4
-
-BET_FIELDS_NUMBER = 5
+from common.constants import BET_FIELDS_NUMBER, MESSAGE_DELIMITER
 
 class ClientHandler:
     def __init__(self, client_sock):
@@ -46,7 +42,7 @@ class ClientHandler:
     def __process_bet_message(self):
         payload_message = self._courier.recvPayloadMessage()
         
-        fields_payload = payload_message.split("|")
+        fields_payload = payload_message.split(MESSAGE_DELIMITER)
         bet = Bet(self._id, fields_payload[0], fields_payload[1], fields_payload[2], fields_payload[3], fields_payload[4])
         store_bets([bet])
         
@@ -57,7 +53,7 @@ class ClientHandler:
     def __process_bets_batch_message(self):
         payload_message = self._courier.recvPayloadMessage()
         
-        fields_payload = payload_message.split("|")
+        fields_payload = payload_message.split(MESSAGE_DELIMITER)
         number_of_bets = int(fields_payload[0])
         
         try:
