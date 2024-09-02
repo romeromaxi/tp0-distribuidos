@@ -13,11 +13,11 @@ compose_name="tp0"
 server_name="server"
 server_image="server:latest"
 server_entrypoint="python3 /main.py"
-server_log_level="DEBUG"
+# server_log_level="DEBUG"
 
 client_image="client:latest"
 client_entrypoint="/client"
-client_log_level="DEBUG"
+# client_log_level="DEBUG"
 
 network_name="testing_net"
 network_subnet="172.25.125.0/24"
@@ -33,7 +33,6 @@ services:
     entrypoint: $server_entrypoint
     environment:
       - PYTHONUNBUFFERED=1
-      - LOGGING_LEVEL=$server_log_level
     volumes:
       - ./server/config.ini:/config.ini:ro
     networks:
@@ -50,7 +49,6 @@ cat <<EOL >> $output_filename
     entrypoint: $client_entrypoint
     environment:
       - CLI_ID=$i
-      - CLI_LOG_LEVEL=$client_log_level
     volumes:
       - ./client/config.yaml:/config.yaml:ro
     networks:
