@@ -54,8 +54,6 @@ class ClientHandler:
         
         self._courier.sendResponseMessage(MessageTypes.OK_RESPONSE.value)
         
-        self._is_running = False
-        
     def __process_bets_batch_message(self):
         payload_message = self._courier.recvPayloadMessage()
         
@@ -83,6 +81,7 @@ class ClientHandler:
         
         except:
             logging.info(f"action: apuesta_recibida | result: fail | cantidad: {number_of_bets}")
+            self._is_running = False
             self._courier.sendResponseMessage(MessageTypes.NO_OK_RESPONSE.value)
         
     def __process_end_bets(self):
