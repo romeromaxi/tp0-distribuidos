@@ -1,19 +1,16 @@
 import logging
 from common.courier import Courier
 from common.utils import Bet
-from common.utils import store_bets
-from common.enums import MessageTypes
-
-BYTES_SIZE_MESSAGE_TYPE = 4
-BYTES_SIZE_PAYLAOD_SIZE = 4
+from common.constants import MessageTypes, BET_FIELDS_NUMBER, MESSAGE_DELIMITER
 
 class ClientHandler:
-    def __init__(self, client_sock):
+    def __init__(self, client_sock, store_bets_callback):
         self._id = None
         self._addr = client_sock.getpeername()
         self._courier = Courier(client_sock)
         
         self._is_running = True
+        self._store_bets_callback = store_bets_callback
         
     def run(self):
         while self._is_running:
@@ -42,7 +39,7 @@ class ClientHandler:
         
         fields_payload = payload_message.split("|")
         bet = Bet(self._id, fields_payload[0], fields_payload[1], fields_payload[2], fields_payload[3], fields_payload[4])
-        store_bets([bet])
+        self._store_bets_callback([bet])
         
         logging.info(f"action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}")
         

@@ -2,8 +2,10 @@ import socket
 import logging
 import signal
 
-from common.clientHandler import ClientHandler
+from common.utils import store_bets, Bet
 
+from common.clientHandler import ClientHandler
+from common.exceptions import ClientConnectionClosedException
 
 class Server:
     def __init__(self, port, listen_backlog):
@@ -16,14 +18,6 @@ class Server:
         signal.signal(signal.SIGTERM, self.__graceful_shutdown)
 
     def run(self):
-        """
-        Dummy Server loop
-
-        Server that accept a new connections and establishes a
-        communication with a client. After client with communucation
-        finishes, servers starts to accept new connections again
-        """
-        
         while not self._sigterm_received:
             try:
                 client_sock = self.__accept_new_connection()
@@ -33,33 +27,25 @@ class Server:
                     raise
 
     def __handle_client_connection(self, client_sock):
-        """
-        Read message from a specific client socket and closes the socket
-
-        If a problem arises in the communication with the client, the
-        client socket will also be closed
-        """
         try:
-            client = ClientHandler(client_sock)
+            client = ClientHandler(client_sock, self.__handle_store_bets)
             client.run()
+        except ClientConnectionClosedException as e:
+            pass
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
             client.close()
 
     def __accept_new_connection(self):
-        """
-        Accept new connections
-
-        Function blocks until a connection to a client is made.
-        Then connection created is printed and returned
-        """
-
         # Connection arrived
         logging.info('action: accept_connections | result: in_progress')
         c, addr = self._server_socket.accept()
         logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
+    
+    def __handle_store_bets(self, bets: list[Bet]):
+        store_bets(bets)
 
     def __graceful_shutdown(self, signum, frame):
         self._sigterm_received = True

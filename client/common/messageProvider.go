@@ -2,15 +2,6 @@ package common
 
 import "fmt"
 
-const DATA_DELIMITER = "|"
-
-const (
-	MESSAGE_TYPE_BET        string = "BET"
-	MESSAGE_TYPE_CONNECTION string = "CONN"
-
-	MESSAGE_TYPE_OK_RESPONSE string = "OK"
-)
-
 type Message struct {
 	Type    string
 	Payload string
@@ -23,8 +14,12 @@ func GetConnectionMessage(clientId string) Message {
 	}
 }
 
+func FormatBet(name string, surname string, dni string, birth string, number string) string {
+	return fmt.Sprintf("%s%s%s%s%s%s%s%s%s", name, DATA_DELIMITER, surname, DATA_DELIMITER, dni, DATA_DELIMITER, birth, DATA_DELIMITER, number)
+}
+
 func GetBetMessage(name string, surname string, dni string, birth string, number string) Message {
-	betPayload := fmt.Sprintf("%s|%s|%s|%s|%s", name, surname, dni, birth, number)
+	betPayload := FormatBet(name, surname, dni, birth, number)
 
 	return Message{
 		Type:    MESSAGE_TYPE_BET,
