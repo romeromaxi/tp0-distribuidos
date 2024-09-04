@@ -2,11 +2,13 @@ import socket
 import logging
 import signal
 
+from common.utils import load_bets, has_won
+
 from common.clientHandler import ClientHandler
 
 
 class Server:
-    def __init__(self, port, listen_backlog):
+    def __init__(self, port, listen_backlog, number_of_agencies):
         # Initialize server socket
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
@@ -14,6 +16,9 @@ class Server:
         
         self._sigterm_received = False
         signal.signal(signal.SIGTERM, self.__graceful_shutdown)
+        
+        self._number_of_agencies = number_of_agencies
+        self._agencies_completed = set()
 
     def run(self):
         """
@@ -40,7 +45,7 @@ class Server:
         client socket will also be closed
         """
         try:
-            client = ClientHandler(client_sock)
+            client = ClientHandler(client_sock, self.__handle_end_agency, self.__handle_get_winners)
             client.run()
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
@@ -61,6 +66,28 @@ class Server:
         logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
 
+    def __handle_end_agency(self, agency_id: int):
+        if agency_id not in self._agencies_completed:
+            self._agencies_completed.add(agency_id)
+            
+            if len(self._agencies_completed) == self._number_of_agencies:
+                logging.info("action: sorteo | result: success")
+            
+            return True
+        
+        return False
+    
+    def __handle_get_winners(self, agency_id: int):
+        if len(self._agencies_completed) != self._number_of_agencies:
+            return (False, [])
+        
+        agency_winners = []
+        for bet in load_bets():
+            if bet.agency == agency_id and has_won(bet):
+                agency_winners.append(bet)
+                
+        return (True, agency_winners)
+    
     def __graceful_shutdown(self, signum, frame):
         self._sigterm_received = True
         self._server_socket.close()

@@ -2,12 +2,19 @@ package common
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
 type Message struct {
 	Type    string
 	Payload string
+}
+
+type MessageWinnerResponse struct {
+	HasResult       bool
+	NumberOfWinners int
+	DNIWinners      []string
 }
 
 func GetConnectionMessage(clientId string) Message {
@@ -53,4 +60,28 @@ func GetEndBetsMessage() Message {
 		Type:    MESSAGE_TYPE_END_BETS,
 		Payload: "",
 	}
+}
+
+func GetObtainWinnersMessage() Message {
+	return Message{
+		Type:    MESSAGE_TYPE_GET_WINNERS,
+		Payload: "",
+	}
+}
+
+func GetWinnersResponseByPayload(payload string) (MessageWinnerResponse, error) {
+	splitPayload := strings.Split(payload, DATA_DELIMITER)
+
+	numberOfWinners, err := strconv.Atoi(splitPayload[0])
+	if err != nil {
+		return MessageWinnerResponse{}, err
+	}
+
+	winners := splitPayload[1:]
+
+	return MessageWinnerResponse{
+		HasResult:       true,
+		NumberOfWinners: numberOfWinners,
+		DNIWinners:      winners,
+	}, nil
 }

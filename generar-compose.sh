@@ -34,6 +34,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=$server_log_level
+      - NUMBER_AGENCIES=$clients_number
     volumes:
       - ./server/config.ini:/config.ini:ro
     networks:

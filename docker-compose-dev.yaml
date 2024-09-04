@@ -7,6 +7,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=DEBUG
+      - NUMBER_AGENCIES=5
     volumes:
       - ./server/config.ini:/config.ini:ro
     networks:
@@ -25,8 +26,8 @@ services:
     networks:
       - testing_net
     depends_on:
-      - server 
-      
+      - server
+
   client2:
     container_name: client2
     image: client:latest
@@ -85,7 +86,7 @@ services:
     networks:
       - testing_net
     depends_on:
-      - server 
+      - server
 
 networks:
   testing_net:

@@ -109,6 +109,8 @@ func main() {
 	clientConfig := common.ClientConfig{
 		ServerAddress: v.GetString("server.address"),
 		ID:            v.GetString("id"),
+		LoopAmount:    v.GetInt("loop.amount"),
+		LoopPeriod:    v.GetDuration("loop.period"),
 		FileName:      v.GetString("file.name"),
 		FileDelimiter: v.GetString("file.delimiter"),
 		BatchSize:     v.GetInt("batch.maxamount"),

@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/op/go-logging"
 )
@@ -17,6 +18,8 @@ var log = logging.MustGetLogger("log")
 type ClientConfig struct {
 	ID            string
 	ServerAddress string
+	LoopAmount    int
+	LoopPeriod    time.Duration
 	FileName      string
 	FileDelimiter string
 	BatchSize     int
@@ -50,8 +53,55 @@ func (c *Client) createClientSocket() error {
 			c.config.ID,
 			err,
 		)
+		return err
 	}
 	c.messageHandler = NewMessageHandler(c.config.ID, conn)
+	return nil
+}
+
+func (c *Client) getWinnersLoop() error {
+	has_result := false
+
+	for msgID := 1; msgID <= c.config.LoopAmount && !has_result; msgID++ {
+		select {
+		case <-c.sigtermReceived:
+			return nil
+
+		default:
+
+			response_winners, err := c.messageHandler.SendGetWinnersMessageAndRecv()
+
+			if err != nil {
+				log.Errorf("action: consulta_ganadores | result: fail | error: %v", err)
+				return err
+			}
+
+			if response_winners.HasResult {
+				log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", response_winners.NumberOfWinners)
+				has_result = true
+				break
+			}
+
+			if c.messageHandler != nil {
+				c.messageHandler.Close()
+			}
+
+			time.Sleep(c.config.LoopPeriod)
+
+			err = c.createClientSocket()
+
+			if err != nil {
+				return err
+			}
+
+			err = c.messageHandler.SendConnectionMessage()
+
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -59,7 +109,6 @@ func (c *Client) createClientSocket() error {
 func (c *Client) StartClientLoop() {
 	c.handleSigterm()
 	defer func() {
-		c.messageHandler.SendEndBetsMessage()
 		c.gracefulShutdown()
 	}()
 
@@ -126,6 +175,19 @@ func (c *Client) StartClientLoop() {
 			log.Errorf("action: open_file | result: fail | error: %v", err)
 			return
 		}
+	}
+
+	err = c.messageHandler.SendEndBetsMessage()
+	if err != nil {
+		log.Errorf("action: fin_apuestas | result: fail | error: %v", err)
+		return
+	}
+
+	err = c.getWinnersLoop()
+
+	if err != nil {
+		log.Errorf("action: winners_loop | result: fail | error: %v", err)
+		return
 	}
 
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)

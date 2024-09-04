@@ -12,6 +12,16 @@ class Courier:
         type_to_send[:len(message_type)] = message_type.encode('utf-8')
         self._conn.send(type_to_send)
         
+    def sendMessageWithPayload(self, message_type: str, message_payload: str):
+        self.sendResponseMessage(message_type)
+        payload = message_payload.encode('utf-8')
+        size_payload = len(payload)
+        size_payload_bytes = size_payload.to_bytes(BYTES_SIZE_PAYLAOD_SIZE, byteorder='big', signed=False)
+        final_payload = size_payload_bytes + payload
+        
+        self._conn.send(final_payload)
+        
+        
     def recvTypeMessage(self) -> str:
         msg_type_bytes = self._conn.recv(BYTES_SIZE_MESSAGE_TYPE)        
         return msg_type_bytes.rstrip(b'\x00').decode('utf-8')

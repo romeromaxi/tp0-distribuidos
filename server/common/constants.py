@@ -10,6 +10,9 @@ class MessageTypes(Enum):
     BETS_BATCH = "NBET"
     CONNECTION = "CONN"
     END_BETS = "END"
+    GET_WINNERS = "GWIN"
     
     OK_RESPONSE = "OK"
     NO_OK_RESPONSE = "NOK"
+    NO_END_RESPONSE = "NEND"
+    WINNERS_RESPONSE = "RWIN"
