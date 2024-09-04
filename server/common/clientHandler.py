@@ -1,7 +1,6 @@
 import logging
 from common.courier import Courier
 from common.utils import Bet
-from common.utils import store_bets
 from common.constants import MessageTypes, BET_FIELDS_NUMBER, MESSAGE_DELIMITER
 from common.messageProvider import get_winners_payload_message
 
@@ -106,6 +105,7 @@ class ClientHandler:
         
         if not finished:
             self._courier.sendResponseMessage(MessageTypes.NO_END_RESPONSE.value)
+            self._is_running = False
             return
             
         payload_winners = get_winners_payload_message(winners)

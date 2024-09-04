@@ -26,31 +26,17 @@ class Server:
         self._agencies_completed_lock = threading.Lock()
 
     def run(self):
-        """
-        Dummy Server loop
-
-        Server that accept a new connections and establishes a
-        communication with a client. After client with communucation
-        finishes, servers starts to accept new connections again
-        """
-        
         while not self._sigterm_received:
             try:
                 client_sock = self.__accept_new_connection()
                 client_thread = threading.Thread(target=self.__handle_client_connection, args=(client_sock,))
                 client_thread.start()
-                self._agencies_threads.append(client_thread)
+                self._agencies_threads.append((client_thread, client_sock))
             except OSError as e:
                 if (not self._sigterm_received):
                     raise
 
     def __handle_client_connection(self, client_sock):
-        """
-        Read message from a specific client socket and closes the socket
-
-        If a problem arises in the communication with the client, the
-        client socket will also be closed
-        """
         try:
             client = ClientHandler(
                 client_sock, self.__handle_store_bets, self.__handle_end_agency, self.__handle_get_winners
@@ -64,58 +50,44 @@ class Server:
             client.close()
 
     def __accept_new_connection(self):
-        """
-        Accept new connections
-
-        Function blocks until a connection to a client is made.
-        Then connection created is printed and returned
-        """
-
-        # Connection arrived
         logging.info('action: accept_connections | result: in_progress')
         c, addr = self._server_socket.accept()
         logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
 
     def __handle_end_agency(self, agency_id: int):
-        self._agencies_completed_lock.acquire()
-        
-        if agency_id not in self._agencies_completed:
-            self._agencies_completed.add(agency_id)
-            
-            if len(self._agencies_completed) == self._number_of_agencies:
-                logging.info("action: sorteo | result: success")
-            
-            self._agencies_completed_lock.release()
-        
-            return True
-        
-        self._agencies_completed_lock.release()
-        
-        return False
+        with self._agencies_completed_lock:
+            if agency_id not in self._agencies_completed:
+                self._agencies_completed.add(agency_id)
+                
+                if len(self._agencies_completed) == self._number_of_agencies:
+                    logging.info("action: sorteo | result: success")
+                    
+                return True
+            return False
     
     def __handle_store_bets(self, bets: list[Bet]):
-        self._bets_files_lock.acquire()
-        store_bets(bets)
-        self._bets_files_lock.release()
-        
+        with self._bets_files_lock:
+            store_bets(bets)
     
     def __handle_get_winners(self, agency_id: int):
-        self._bets_files_lock.acquire()
-        if len(self._agencies_completed) != self._number_of_agencies:
-            self._bets_files_lock.release()
-            return (False, [])
+        with self._agencies_completed_lock:
+            if len(self._agencies_completed) != self._number_of_agencies:
+                return (False, [])
         
         agency_winners = []
-        for bet in load_bets():
-            if bet.agency == agency_id and has_won(bet):
-                agency_winners.append(bet)
+        with self._bets_files_lock:
+            for bet in load_bets():
+                if bet.agency == agency_id and has_won(bet):
+                    agency_winners.append(bet)
                 
-        self._bets_files_lock.release()
-            
         return (True, agency_winners)
     
-    def __graceful_shutdown(self, signum, frame):
+    def __graceful_shutdown(self, signum, frame): 
+        for agency_thread,client_handler in self._agencies_threads:
+            client_handler.close() 
+            agency_thread.join() 
+        
         self._sigterm_received = True
         self._server_socket.close()
         logging.info('action: graceful_shutdown | result: success')
