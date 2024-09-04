@@ -45,7 +45,7 @@ class Server:
         except ClientConnectionClosedException as e:
             pass
         except OSError as e:
-            logging.critical(f"action: receive_message | result: fail | error: {e}")
+            logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
             client.close()
 
