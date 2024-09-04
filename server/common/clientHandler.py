@@ -6,13 +6,14 @@ from common.constants import MessageTypes, BET_FIELDS_NUMBER, MESSAGE_DELIMITER
 from common.messageProvider import get_winners_payload_message
 
 class ClientHandler:
-    def __init__(self, client_sock, notify_end_callback, get_winners_callback):
+    def __init__(self, client_sock, store_bets_callback, notify_end_callback, get_winners_callback):
         self._id = None
         self._addr = client_sock.getpeername()
         self._courier = Courier(client_sock)
         
         self._is_running = True
         self._finished_betting_load = False
+        self._store_bets_callback = store_bets_callback
         self._notify_end_callback = notify_end_callback
         self._get_winners_callback = get_winners_callback
         
@@ -53,7 +54,7 @@ class ClientHandler:
         
         fields_payload = payload_message.split(MESSAGE_DELIMITER)
         bet = Bet(self._id, fields_payload[0], fields_payload[1], fields_payload[2], fields_payload[3], fields_payload[4])
-        store_bets([bet])
+        self._store_bets_callback([bet])
         
         logging.info(f"action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}")
         
@@ -79,7 +80,7 @@ class ClientHandler:
                 )
                 bets.append(bet)
             
-            store_bets(bets)
+            self._store_bets_callback(bets)
             
             logging.info(f"action: apuesta_recibida | result: success | cantidad: {number_of_bets}")
             self._courier.sendResponseMessage(MessageTypes.OK_RESPONSE.value)
@@ -106,8 +107,7 @@ class ClientHandler:
         if not finished:
             self._courier.sendResponseMessage(MessageTypes.NO_END_RESPONSE.value)
             return
-        
-        
+            
         payload_winners = get_winners_payload_message(winners)
         
         self._courier.sendMessageWithPayload(MessageTypes.WINNERS_RESPONSE.value, payload_winners)

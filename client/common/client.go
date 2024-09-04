@@ -199,6 +199,7 @@ func (c *Client) handleSigterm() {
 
 	go func() {
 		<-sigs
+		log.Debugf("action: sigterm_received | client_id: %v", c.config.ID)
 		c.gracefulShutdown()
 		c.sigtermReceived <- true
 		close(c.sigtermReceived)

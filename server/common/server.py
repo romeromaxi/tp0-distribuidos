@@ -1,11 +1,12 @@
 import socket
 import logging
 import signal
+import threading
 
-from common.utils import load_bets, has_won
+from common.utils import load_bets, store_bets, has_won, Bet
 
 from common.clientHandler import ClientHandler
-
+from common.exceptions import ClientConnectionClosedException
 
 class Server:
     def __init__(self, port, listen_backlog, number_of_agencies):
@@ -19,6 +20,10 @@ class Server:
         
         self._number_of_agencies = number_of_agencies
         self._agencies_completed = set()
+        
+        self._agencies_threads = []
+        self._bets_files_lock = threading.Lock()
+        self._agencies_completed_lock = threading.Lock()
 
     def run(self):
         """
@@ -32,7 +37,9 @@ class Server:
         while not self._sigterm_received:
             try:
                 client_sock = self.__accept_new_connection()
-                self.__handle_client_connection(client_sock)
+                client_thread = threading.Thread(target=self.__handle_client_connection, args=(client_sock,))
+                client_thread.start()
+                self._agencies_threads.append(client_thread)
             except OSError as e:
                 if (not self._sigterm_received):
                     raise
@@ -45,10 +52,14 @@ class Server:
         client socket will also be closed
         """
         try:
-            client = ClientHandler(client_sock, self.__handle_end_agency, self.__handle_get_winners)
+            client = ClientHandler(
+                client_sock, self.__handle_store_bets, self.__handle_end_agency, self.__handle_get_winners
+            )
             client.run()
+        except ClientConnectionClosedException as e:
+            pass
         except OSError as e:
-            logging.error(f"action: receive_message | result: fail | error: {e}")
+            logging.critical(f"action: receive_message | result: fail | error: {e}")
         finally:
             client.close()
 
@@ -67,18 +78,32 @@ class Server:
         return c
 
     def __handle_end_agency(self, agency_id: int):
+        self._agencies_completed_lock.acquire()
+        
         if agency_id not in self._agencies_completed:
             self._agencies_completed.add(agency_id)
             
             if len(self._agencies_completed) == self._number_of_agencies:
                 logging.info("action: sorteo | result: success")
             
+            self._agencies_completed_lock.release()
+        
             return True
+        
+        self._agencies_completed_lock.release()
         
         return False
     
+    def __handle_store_bets(self, bets: list[Bet]):
+        self._bets_files_lock.acquire()
+        store_bets(bets)
+        self._bets_files_lock.release()
+        
+    
     def __handle_get_winners(self, agency_id: int):
+        self._bets_files_lock.acquire()
         if len(self._agencies_completed) != self._number_of_agencies:
+            self._bets_files_lock.release()
             return (False, [])
         
         agency_winners = []
@@ -86,6 +111,8 @@ class Server:
             if bet.agency == agency_id and has_won(bet):
                 agency_winners.append(bet)
                 
+        self._bets_files_lock.release()
+            
         return (True, agency_winners)
     
     def __graceful_shutdown(self, signum, frame):

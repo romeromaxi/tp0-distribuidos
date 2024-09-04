@@ -1,4 +1,7 @@
 import socket
+import logging
+
+from common.exceptions import ClientConnectionClosedException
 
 class ConnectionHandler:
     def __init__(self, client_sock: socket):
@@ -12,7 +15,7 @@ class ConnectionHandler:
             bytes_sent = self._socket.send(data[total_bytes_sent:])
 
             if bytes_sent == 0:
-                raise OSError()
+                raise ClientConnectionClosedException()
 
             total_bytes_sent += bytes_sent
 
@@ -24,7 +27,7 @@ class ConnectionHandler:
             data_chunk = self._socket.recv(size_to_recv - total_bytes_recv)
             
             if data_chunk == b'':
-                raise OSError()
+                raise ClientConnectionClosedException()
             
             total_bytes_recv += len(data_chunk)
             data += data_chunk
