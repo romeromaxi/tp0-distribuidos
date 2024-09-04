@@ -2,10 +2,10 @@ import socket
 import logging
 import signal
 
-from common.utils import load_bets, has_won
+from common.utils import load_bets, store_bets, has_won, Bet
 
 from common.clientHandler import ClientHandler
-
+from common.exceptions import ClientConnectionClosedException
 
 class Server:
     def __init__(self, port, listen_backlog, number_of_agencies):
@@ -21,14 +21,6 @@ class Server:
         self._agencies_completed = set()
 
     def run(self):
-        """
-        Dummy Server loop
-
-        Server that accept a new connections and establishes a
-        communication with a client. After client with communucation
-        finishes, servers starts to accept new connections again
-        """
-        
         while not self._sigterm_received:
             try:
                 client_sock = self.__accept_new_connection()
@@ -38,28 +30,19 @@ class Server:
                     raise
 
     def __handle_client_connection(self, client_sock):
-        """
-        Read message from a specific client socket and closes the socket
-
-        If a problem arises in the communication with the client, the
-        client socket will also be closed
-        """
         try:
-            client = ClientHandler(client_sock, self.__handle_end_agency, self.__handle_get_winners)
+            client = ClientHandler(
+                client_sock, self.__handle_store_bets, self.__handle_end_agency, self.__handle_get_winners
+                )
             client.run()
+        except ClientConnectionClosedException as e:
+            pass
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
             client.close()
 
     def __accept_new_connection(self):
-        """
-        Accept new connections
-
-        Function blocks until a connection to a client is made.
-        Then connection created is printed and returned
-        """
-
         # Connection arrived
         logging.info('action: accept_connections | result: in_progress')
         c, addr = self._server_socket.accept()
@@ -76,6 +59,9 @@ class Server:
             return True
         
         return False
+    
+    def __handle_store_bets(self, bets: list[Bet]):
+        store_bets(bets)
     
     def __handle_get_winners(self, agency_id: int):
         if len(self._agencies_completed) != self._number_of_agencies:
