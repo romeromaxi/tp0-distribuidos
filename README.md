@@ -431,8 +431,7 @@ Para garantizar la correcta sincronización, se emplearon dos mecanismos de lock
 - Un _lock_ sobre el archivo de apuestas, utilizado tanto para las operaciones de escritura (`store_bets`) como de lectura (`load_bets`), asegurando que el acceso concurrente al archivo no cause inconsistencias.
 - Otro _lock_ que se utiliza para almacenar las agencias que confirmaron haber finalizado sus apuestas, evitando problemas de concurrencia al actualizar esta información en paralelo.
 
-
-[Commit Ej 8](https://github.com/romeromaxi/tp0-distribuidos/tree/2bb9c271e80c1938b6786e1a9697bf57d4006a80) (enlace al último commit correspondiente a la rama del ejercicio 8)
+[Commit Ej 8](https://github.com/romeromaxi/tp0-distribuidos/tree/3b3a6cb717f8a26573873f7c479a1281d3a80468) (enlace al último commit correspondiente a la rama del ejercicio 8)
 
 ## Consideraciones Generales
 Se espera que los alumnos realicen un _fork_ del presente repositorio para el desarrollo de los ejercicios.El _fork_ deberá contar con una sección de README que indique como ejecutar cada ejercicio.
