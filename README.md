@@ -271,6 +271,11 @@ De forma gráfica se vería
     <img src="assets/Ej5.png" alt="Flujo de mensajes - Ej5" width="600">
 </div>
 
+##### Ejecución
+Para poder correr este ejercicio basta con ejecutar el siguiente comando:
+```
+make docker-compose-up
+```
 
 ### Ejercicio N°6:
 Modificar los clientes para que envíen varias apuestas a la vez (modalidad conocida como procesamiento por _chunks_ o _batchs_). La información de cada agencia será simulada por la ingesta de su archivo numerado correspondiente, provisto por la cátedra dentro de `.data/datasets.zip`.
