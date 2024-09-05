@@ -110,6 +110,8 @@ En caso de que no se proporcionen los parámetros necesarios, o si los parámetr
 Usage: ./generar-compose.sh <output_filename> <clients_number>
 ```
 
+[Commit Ej 1](https://github.com/romeromaxi/tp0-distribuidos/tree/a4f37a09f10398e8084687c8b135035fcedeb4f6) (enlace al último commit correspondiente a la rama del ejercicio 1)
+
 
 ### Ejercicio N°2:
 Modificar el cliente y el servidor para lograr que realizar cambios en el archivo de configuración no requiera un nuevo build de las imágenes de Docker para que los mismos sean efectivos. La configuración a través del archivo correspondiente (`config.ini` y `config.yaml`, dependiendo de la aplicación) debe ser inyectada en el container y persistida afuera de la imagen (hint: `docker volumes`).
@@ -131,6 +133,8 @@ volumes:
 En ambos se utilizó la opción de `:ro` (read-only) para que sean tratados solamente como archivos de lectura, evitando posibles modificaciones.
 
 Para realizar la prueba correspondiente se pueden ejecutar los contenedores (con el comando `make docker-compose-up`), luego modificar los archivos de configuración y ver como se actualizan los contenedores
+
+[Commit Ej 2](https://github.com/romeromaxi/tp0-distribuidos/tree/5ee37c7f26024275dbf91f1fda9017a5432dee15) (enlace al último commit correspondiente a la rama del ejercicio 2)
 
 ### Ejercicio N°3:
 Crear un script de bash `validar-echo-server.sh` que permita verificar el correcto funcionamiento del servidor utilizando el comando `netcat` para interactuar con el mismo. Dado que el servidor es un EchoServer, se debe enviar un mensaje al servidor y esperar recibir el mismo mensaje enviado.
@@ -157,6 +161,8 @@ Por ejemplo, si quere enviarse el mensaje `Test echo-server` pero se quiere segu
 ./validar-echo-server.sh - "Test echo-server"
 ```
 
+[Commit Ej 3](https://github.com/romeromaxi/tp0-distribuidos/tree/786792959906ba8e9814db461f42438ee87a3ff3) (enlace al último commit correspondiente a la rama del ejercicio 3)
+
 ### Ejercicio N°4:
 Modificar servidor y cliente para que ambos sistemas terminen de forma _graceful_ al recibir la signal SIGTERM. Terminar la aplicación de forma _graceful_ implica que todos los _file descriptors_ (entre los que se encuentran archivos, sockets, threads y procesos) deben cerrarse correctamente antes que el thread de la aplicación principal muera. Loguear mensajes en el cierre de cada recurso (hint: Verificar que hace el flag `-t` utilizado en el comando `docker compose down`).
 
@@ -181,6 +187,8 @@ Para poder realizar la prueba correspondiente se deben seguir los siguientes pas
     ```
     make docker-compose-down
     ```
+
+[Commit Ej 4](https://github.com/romeromaxi/tp0-distribuidos/tree/c12025192de4beb760580c69232dcd8a15bba921) (enlace al último commit correspondiente a la rama del ejercicio 4)
 
 ## Parte 2: Repaso de Comunicaciones
 
@@ -277,6 +285,8 @@ Para poder correr este ejercicio basta con ejecutar el siguiente comando:
 make docker-compose-up
 ```
 
+[Commit Ej 5](https://github.com/romeromaxi/tp0-distribuidos/tree/8349a56457d0f3454d3a553003350fcb5d76e7c8) (enlace al último commit correspondiente a la rama del ejercicio 5)
+
 ### Ejercicio N°6:
 Modificar los clientes para que envíen varias apuestas a la vez (modalidad conocida como procesamiento por _chunks_ o _batchs_). La información de cada agencia será simulada por la ingesta de su archivo numerado correspondiente, provisto por la cátedra dentro de `.data/datasets.zip`.
 Los _batchs_ permiten que el cliente registre varias apuestas en una misma consulta, acortando tiempos de transmisión y procesamiento.
@@ -338,6 +348,8 @@ Para una correcta ejecución se deben seguir estos pasos:
     ```
     make docker-compose-up
     ```
+
+[Commit Ej 6](https://github.com/romeromaxi/tp0-distribuidos/tree/0232257ba43453edb91174626b76a9aaaf929abb) (enlace al último commit correspondiente a la rama del ejercicio 6)
 
 
 ### Ejercicio N°7:
@@ -401,6 +413,8 @@ Para una correcta ejecución se deben seguir estos pasos:
     make docker-compose-up
     ```
 
+[Commit Ej 7](https://github.com/romeromaxi/tp0-distribuidos/tree/dfb0c5d354b2b06adfebe4849aba084102d5121e) (enlace al último commit correspondiente a la rama del ejercicio 7)
+
 
 ## Parte 3: Repaso de Concurrencia
 
@@ -417,6 +431,8 @@ Para garantizar la correcta sincronización, se emplearon dos mecanismos de lock
 - Un _lock_ sobre el archivo de apuestas, utilizado tanto para las operaciones de escritura (`store_bets`) como de lectura (`load_bets`), asegurando que el acceso concurrente al archivo no cause inconsistencias.
 - Otro _lock_ que se utiliza para almacenar las agencias que confirmaron haber finalizado sus apuestas, evitando problemas de concurrencia al actualizar esta información en paralelo.
 
+
+[Commit Ej 8](https://github.com/romeromaxi/tp0-distribuidos/tree/2bb9c271e80c1938b6786e1a9697bf57d4006a80) (enlace al último commit correspondiente a la rama del ejercicio 8)
 
 ## Consideraciones Generales
 Se espera que los alumnos realicen un _fork_ del presente repositorio para el desarrollo de los ejercicios.El _fork_ deberá contar con una sección de README que indique como ejecutar cada ejercicio.
