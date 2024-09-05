@@ -11,26 +11,26 @@ El payload se envía como una cadena de texto codificada en `UTF-8`. Si el mensa
 Los códigos para los diferentes tipos de mensajes en el protocolo son los siguientes:
 
 #### **Enviados por el Cliente**:
-- `CONN`: Después de establecer la conexión, el cliente envía este mensaje para comunicar al servidor su *Id de Agencia*. Esto permite al servidor identificar el origen de cada mensaje sin necesidad de incluir esta información en otros (reduciendo su tamaño y procesamiento)
-    - Payload: `Id de Agencia`
+- `CONN`: Después de establecer la conexión, el cliente envía este mensaje para comunicar al servidor su *Id de Agencia*. Esto permite al servidor identificar el origen de cada mensaje sin necesidad de incluir esta información en otros (reduciendo su tamaño y procesamiento).
+    - Payload: `Id de Agencia`.
 - `BET`: para indicarle al servidor que quiere realizar una apuesta.
-    - Payload: conformado por cada una de los campos necesarios para realizar una apuesta, separados por el caracter delimitador definido. El orden de los campos es `NOMBRE|APELLIDO|DOCUMENTO|NACIMIENTO|NUMERO`
-- `NBET`: le avisa al servidor que enviará un conjunto de apuestas en un solo mensaje (procesamiento en _batchs_)
-    - Payload: el primer campo corresponde a la cantidad de apuestas que tiene el mensaje, seguidos por todos los campos de cada apuesta (como para el mensaje `BET`). Por ejemplo, en el caso de `2 (dos)` apuestas: `2|NOM_1|APE_1|DOC_1|NAC_1|NRO_1|NOM_2|APE_2|DOC_2|NAC_2|NRO_2`
+    - Payload: conformado por cada una de los campos necesarios para realizar una apuesta, separados por el caracter delimitador definido. El orden de los campos es `NOMBRE|APELLIDO|DOCUMENTO|NACIMIENTO|NUMERO`.
+- `NBET`: le avisa al servidor que enviará un conjunto de apuestas en un solo mensaje (procesamiento en _batchs_).
+    - Payload: el primer campo corresponde a la cantidad de apuestas que tiene el mensaje, seguidos por todos los campos de cada apuesta (como para el mensaje `BET`). Por ejemplo, en el caso de `2 (dos)` apuestas: `2|NOM_1|APE_1|DOC_1|NAC_1|NRO_1|NOM_2|APE_2|DOC_2|NAC_2|NRO_2`.
 - `END`: se utiliza cuando el cliente (agencia de apuestas) ha terminado de enviar todas las apuestas correspondientes.
-    - Payload: no aplica
-- `GWIN`: le solicita al servidor los resultados del sorteo para obtener los ganadores
-    - Payload: no aplica
+    - Payload: no aplica.
+- `GWIN`: le solicita al servidor los resultados del sorteo para obtener los ganadores.
+    - Payload: no aplica.
 
 #### **Enviados por el Servidor**:
 - `OK`: le informa al cliente en cuestión que la acción solicitada se completó con éxito. Este mensaje puede referirse a la realización de una apuesta, al procesamiento de varias apuestas en batch, o a la finalización de todas las apuestas del cliente.
-    - Payload: no aplica
-- `NOK`: le indica al cliente que ocurrió un error durante la ejecución de la acción solicitada. Es la respuesta opuesta al mensaje `OK`
-    - Payload: no aplica
-- `NEND`: para comunicarle al cliente que debe esperar para obtener los ganadores del sorteo, ya que algunas agencias aún no han completado la carga de apuestas. Esto es una respuesta al mensaje `GWIN`, en el caso que el sorteo no haya terminado
-    - Payload: no aplica
-- `RWIN`: le notifica al cliente que puede obtener los resultados del sorteo, los cuales se comunicarán en el siguiente mensaje (respuesta a `GWIN` cuando el sorteo si ha  finalizado)
-    - Payload: el primer campo corresponde a la cantidad de ganadores, seguido por cada uno de los documentos. Para el caso de `3 (tres)` ganadores sería: `3|DOC_1|DOC_2|DOC_3`
+    - Payload: no aplica.
+- `NOK`: le indica al cliente que ocurrió un error durante la ejecución de la acción solicitada. Es la respuesta opuesta al mensaje `OK`.
+    - Payload: no aplica.
+- `NEND`: para comunicarle al cliente que debe esperar para obtener los ganadores del sorteo, ya que algunas agencias aún no han completado la carga de apuestas. Esto es una respuesta al mensaje `GWIN`, en el caso que el sorteo no haya terminado.
+    - Payload: no aplica.
+- `RWIN`: le notifica al cliente que puede obtener los resultados del sorteo, los cuales se comunicarán en el siguiente mensaje (respuesta a `GWIN` cuando el sorteo si ha  finalizado).
+    - Payload: el primer campo corresponde a la cantidad de ganadores, seguido por cada uno de los documentos. Para el caso de `3 (tres)` ganadores sería: `3|DOC_1|DOC_2|DOC_3`.
 
 ## Parte 2: Repaso de Comunicaciones
 ## Ejercicio N°6:
@@ -63,20 +63,20 @@ En este caso se utilizaron solamente los mensajes de
 - `NOK`
 - `END`
 
-Aunque el servidor podría seguir reconociendo un paquete del tipo `BET`
+Aunque el servidor podría seguir reconociendo un paquete del tipo `BET`.
 
 **Pasos**
 
 En este punto el flujo es el siguiente:
-1. El `Cliente` envía el mensaje de conexión `CONN`, y luego su número de agencia (`Id`)
+1. El `Cliente` envía el mensaje de conexión `CONN`, y luego su número de agencia (`Id`).
 
-2. Inmediatamente después, el `Cliente` envía el mensaje `NBET` con una cierta cantidad de apuestas, en un proceso _batch_
+2. Inmediatamente después, el `Cliente` envía el mensaje `NBET` con una cierta cantidad de apuestas, en un proceso _batch_.
 
 3. El `Servidor` recibe las apuestas, las decodifica y las almacena. Si no se produce ningún error en este proceso, responde al `Cliente` con el mensaje de `OK`. Si se produjo un error, le enviará el correspondiente `NOK`. 
 
-4. Si el `Cliente`  tiene apuestas pendientes por enviar, vuelve al _Paso 2_
+4. Si el `Cliente`  tiene apuestas pendientes por enviar, vuelve al _Paso 2_.
 
-5. Una vez que el `Cliente` ha enviado todas las apuestas, comunica la finalización de la carga con el mensaje `END`
+5. Una vez que el `Cliente` ha enviado todas las apuestas, comunica la finalización de la carga con el mensaje `END`.
 
 
 De forma gráfica se vería
@@ -84,3 +84,13 @@ De forma gráfica se vería
 <div align="center">
     <img src="assets/Ej6.png" alt="Flujo de mensajes - Ej6" width="600">
 </div>
+
+
+### Ejecución
+Para una correcta ejecución se deben seguir estos pasos:
+1. Extraer los archivos de las apuestas de `./data/dataset.zip`, y colocarlos dentro de `./data/dataset/`.
+
+2. Ejecutar el siguiente comando:
+    ```
+    make docker-compose-up
+    ```
