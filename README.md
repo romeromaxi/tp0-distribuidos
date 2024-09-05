@@ -10,7 +10,7 @@ En caso de que la validación sea exitosa imprimir: `action: test_echo_server | 
 
 El script deberá ubicarse en la raíz del proyecto. Netcat no debe ser instalado en la máquina _host_ y no se puede exponer puertos del servidor para realizar la comunicación (hint: `docker network`).
 
-## Solución:
+## Resolución:
 Para este ejercicio, se desarrolló el script `validar-echo-server.sh` que verifica el funcionamiento del servidor utilizando `netcat`. Se puede ejecutar mediante el comando `sh` o de forma directa `./` (si se tienen permisos de ejecución).
 
 Antes de ejecutar el script, se debe asegurar de que el servidor esté activo (`make docker-compose-up`)
