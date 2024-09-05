@@ -84,3 +84,13 @@ De forma gráfica se vería
 <div align="center">
     <img src="assets/Ej7.png" alt="Flujo de mensajes - Ej7" width="600">
 </div>
+
+
+### Ejecución
+Para una correcta ejecución se deben seguir estos pasos:
+1. Extraer los archivos de las apuestas de `./data/dataset.zip`, y colocarlos dentro de `./data/dataset/`
+
+2. Ejecutar el siguiente comando
+    ```
+    make docker-compose-up
+    ```
