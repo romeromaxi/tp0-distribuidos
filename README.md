@@ -67,3 +67,19 @@ En este caso se utilizaron solamente los mensajes de
 - `CONN`
 - `BET`
 - `OK`
+
+**Pasos**
+
+En este punto el flujo es el siguiente:
+1. El `Cliente` envía el mensaje de conexión `CONN`, y luego su número de agencia (`Id`)
+
+2. Inmediatamente después, el `Cliente` envía el mensaje `BET` y luego los datos necesarios para realizar una apuesta
+
+3. El `Servidor`, al recibir la apuesta, la almacena y le responde de forma satisfactoria al `Cliente` con el mensaje de `OK`
+
+
+De forma gráfica se vería
+
+<div align="center">
+    <img src="assets/Ej5.png" alt="Flujo de mensajes" width="600">
+</div>
