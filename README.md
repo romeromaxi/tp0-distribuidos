@@ -83,3 +83,10 @@ De forma gráfica se vería
 <div align="center">
     <img src="assets/Ej5.png" alt="Flujo de mensajes" width="600">
 </div>
+
+
+### Ejecución
+Para poder correr este ejercicio basta con ejecutar el siguiente comando:
+```
+make docker-compose-up
+```
