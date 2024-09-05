@@ -15,10 +15,12 @@ Para garantizar la correcta sincronización, se emplearon dos mecanismos de lock
 - Un _lock_ sobre el archivo de apuestas, utilizado tanto para las operaciones de escritura (`store_bets`) como de lectura (`load_bets`), asegurando que el acceso concurrente al archivo no cause inconsistencias.
 - Otro _lock_ que se utiliza para almacenar las agencias que confirmaron haber finalizado sus apuestas, evitando problemas de concurrencia al actualizar esta información en paralelo.
 
-### Ejecución
-1. Extraer los archivos de las apuestas de `./data/dataset.zip`, y colocarlos dentro de `./data/dataset/`
 
-2. Ejecutar el siguiente comando
+### Ejecución
+Para una correcta ejecución se deben seguir estos pasos:
+1. Extraer los archivos de las apuestas de `./data/dataset.zip`, y colocarlos dentro de `./data/dataset/`.
+
+2. Ejecutar el siguiente comando:
     ```
     make docker-compose-up
     ```
