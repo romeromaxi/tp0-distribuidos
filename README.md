@@ -14,3 +14,14 @@ Se configuró el manejo de señales utilizando `signal.signal` en `Python`.Se es
 Se implementó una `goroutine` para manejar la recepción de señales del sistema, que se captura con `signal.Notify`. Cuando se recibe `SIGTERM`, la `goroutine` es la encargada de cerrar todos los recursos abiertos.
 
 Por otro lado, se incrementó el valor del `timeout` dentro del `docker-compose-down`, para garantizar que Docker espere a que los contenedores terminen de manera ordenada antes de deternelos.
+
+Para poder realizar la prueba correspondiente se deben seguir los siguientes pasos
+1. Levanta el cliente y el servidor utilizando el comando:
+    ```
+    make docker-compose-up
+    ```
+
+2. Termina la ejecución anticipadamente con:
+    ```
+    make docker-compose-down
+    ```
