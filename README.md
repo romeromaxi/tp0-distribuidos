@@ -199,7 +199,7 @@ En los ejercicios siguientes, se utiliza un protocolo de comunicación basado en
 
 Una vez recibido el `Tipo de Mensaje`, se puede identificar la estructura del siguiente mensaje, si es necesario. Este segundo mensaje incluye un encabezado de `4 bytes` en formato `BigEndian`, que indica la longitud en bytes del payload (el contenido restante del mensaje). Esto permite saber cuántos bytes se deben leer para recibir el mensaje completo.
 
-El payload se envía como una cadena de texto codificada en `UTF-8`. Si el mensaje contiene varios datos, estos se separan con el delimitador `|`. Este delimitador se eligió tras revisar los archivos de prueba en `./data/dataset.zip`, asegurando que el carácter `|` no aparece en ninguno de ellos.
+El payload se envía como una cadena de texto codificada en `UTF-8`. Si el mensaje contiene varios datos, estos se separan con el delimitador `|`. Este delimitador se eligió tras revisar los archivos de prueba en `./data/dataset.zip`, asegurando que el carácter `|` no aparece en ninguno de ellos ([Ver el análisis exploratorio de los datos](#anexo---análisis-exploratorio-de-datos)).
 
 #### Tipos de Mensajes
 Los códigos para los diferentes tipos de mensajes en el protocolo son los siguientes:
@@ -306,7 +306,7 @@ volumes:
     - ./client/config.yaml:/config.yaml:ro
     - ./.data/dataset/agency-1.csv:/agency.csv:ro
 ```
-Por otro lado, en el archivo de configuración (`client/config.yaml`) se modificó el valor de `batch.maxAmount`, limitando el envío de cada batch a menos de 100 apuestas, con el objetivo de que los paquetes no superen los 8kB.
+Por otro lado, en el archivo de configuración (`client/config.yaml`) se modificó el valor de `batch.maxAmount`, limitando el envío de cada batch a menos de 100 apuestas  ([Ver el análisis exploratorio de los datos](#anexo---análisis-exploratorio-de-datos))., con el objetivo de que los paquetes no superen los 8kB.
 
 Además, se agregaron nuevas configuraciónes `file.name` y `file.delimiter`, que especifican el nombre del archivo que el cliente debe leer y el carácter delimitador de campos dentro de este archivo.
 
@@ -446,3 +446,39 @@ Cada ejercicio deberá resolverse en una rama independiente con nombres siguiend
 Puden obtener un listado del último commit de cada rama ejecutando `git ls-remote`.
 
 Finalmente, se pide a los alumnos leer atentamente y **tener en cuenta** los criterios de corrección provistos [en el campus](https://campusgrado.fi.uba.ar/mod/page/view.php?id=73393).
+
+## Anexo - Análisis exploratorio de datos
+Antes de proceder con el diseño del protocolo de comunicación, se realizó un análisis  de los datos para determinar la longitud máxima de cada campo en bytes y comprobar la presencia de un delimitador específico.
+
+Para llevar a cabo este análisis, se extrajeron los archivos contenidos en `./data/dataset.zip`, obteniendo los siguientes resultados:
+
+- `Nombre`: la longitud máxima es de `23 bytes`
+- `Apellido`: la longitud máxima es de `10 bytes`
+- `Documento`: la longitud máxima es de `8 bytes`
+- `Nacimiento`: la longitud máxima es de `10 bytes`
+- `Numero`: la longitud máxima es de `4 bytes`
+
+Entonces podemos determinar que la máxima longitud de una apuesta es de `59 bytes`. Como estos campos estarán separados por un caracter delimitador (`1 bytes`), dentro del mensaje, una apuesta podría tener como máximo `63 bytes`.
+Si tenemos en cuenta que para separar dos apuestas, necesitamos poner un delimitador, nos darían una longitud máxima de `64 bytes`. 
+
+En cuanto al caracter delimitador se utilizó `|`, ya que el mismo no se encontró dentro de ningún campo de los archivos analizados.
+
+Por otro lado, como el protocolo a emplear debe tener una opción para envíar apuestas en _batch_, pero que no supere `8kb`, fue necesario calcular la máxima cantidad posible.
+
+Teniendo en cuenta que la idea del mensaje `NBET` del protocolo es que los primeros `4 bytes` correspondan a la longitud (en bytes) del payload del mensaje, y luego necesitamos indicar la cantidad de apuestas que se incluyen (para este tipo de mensaje).
+
+
+Como nuestros mensajes no pueden superar los `8kb`, la longitud del mensaje está dada por la siguiente ecuación (siendo `N` la cantidad de apuestas que se incluyen en el mensaje)
+```
+Espacio total = 4 (indicar longitud del payload) + len(str(N)) (longitud en bytes del string de N) + (N * 64) (tamaño de las apuestas)
+```
+
+Resolviendo esta ecuación, nos da que el número más grande que no supera los `8kB` es `126`:
+
+```
+Espacio total = 4 + len(str(126)) + (126 * 64) =  8071 bytes
+```
+
+En conclusión, el tamaño máximo del batch debe ser menor o igual a `126`.
+
+Durante todo el trabajo se estableció una longitud máxima de `100` apuestas por batch
